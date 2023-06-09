@@ -7,15 +7,16 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 
 rule_size = 11
+num_rules = 50
 
 
 # Fuzzy sets
 def iso_tri(x, m, s):
-    return max(min((x - m) / s, (m - x) / s), 0)
+    return max(min((x - m + s) / s, (m - x + s) / s), 0)
 
 
 def rect_trap(x, m, s):
-    return max(min((x - m) / s, 1), 0)
+    return max(min((x - m + s) / s, 1), 0)
 
 
 def gaussian(x, m, s):
@@ -40,7 +41,7 @@ def calculate_gR(sample, rule, linguistic_values):
             value = linguistic_values[lv](sample[i // 2])
             if neg:
                 value = negation(value)
-            compat *= value
+            compat *= (value + 0.01)
     return compat
 
 
@@ -58,10 +59,10 @@ def predict(sample, rules, linguistic_values):
 
 
 # Fitness function
-def objective_function(individual, X, y, linguistic_values, rule_size):
-    rule = individual
-    cf_value = calculate_cf(X, y, rule, linguistic_values)
-    return cf_value,
+def objective_function(individuals, X, y, linguistic_values, rule_size):
+    rule_base = [individuals[i:i + rule_size] for i in range(0, len(individuals), rule_size)]
+    cf_values = [calculate_cf(X, y, rule, linguistic_values) for rule in rule_base]
+    return sum(cf_values) / len(rule_base),
 
 
 # Calculate the CF values
@@ -164,7 +165,8 @@ toolbox.register("attr_linguistic", random.randint, 0, 3)
 toolbox.register("attr_negation", random.randint, 0, 1)
 toolbox.register("attr_class", random.randint, 0, 1)
 toolbox.register("individual", tools.initCycle, creator.Individual,
-                 (toolbox.attr_linguistic, toolbox.attr_negation) * ((rule_size - 1) // 2) + (toolbox.attr_class,))
+                 (toolbox.attr_linguistic, toolbox.attr_negation) * ((rule_size - 1) // 2) + (toolbox.attr_class,),
+                 n=num_rules)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("mate", tools.cxOnePoint)
 toolbox.register("mutate", tools.mutUniformInt, low=0, up=1, indpb=0.1)
@@ -174,7 +176,7 @@ toolbox.register("evaluate", objective_function, X=X_train, y=y_train, linguisti
 
 # Genetic algorithm parameters
 population_size = 10
-num_generations = 100
+num_generations = 10
 crossover_probability = 0.7
 mutation_probability = 0.3
 
@@ -182,7 +184,7 @@ mutation_probability = 0.3
 population = toolbox.population(n=population_size)
 
 # Perform the genetic algorithm
-hof = tools.HallOfFame(1)
+hof = tools.HallOfFame(10)
 stats = tools.Statistics(lambda ind: ind.fitness.values)
 stats.register("avg", np.mean)
 stats.register("std", np.std)
@@ -193,9 +195,10 @@ population, logbook = algorithms.eaSimple(population, toolbox, cxpb=crossover_pr
                                           ngen=num_generations, stats=stats, halloffame=hof, verbose=True)
 
 # Test the best individual on the test set
-best_rule = hof[0]
-print("Best rule:", best_rule)
+best_individual = hof[0]
+best_rule_base = [best_individual[i:i + rule_size] for i in range(0, len(best_individual), rule_size)]
+print("Best rule base:", best_rule_base)
 
-predictions = [predict(X_test[i], [best_rule], linguistic_values) for i in range(X_test.shape[0])]
+predictions = [predict(X_test[i], best_rule_base, linguistic_values) for i in range(X_test.shape[0])]
 accuracy = sum([1 if predictions[i] == y_test[i] else 0 for i in range(len(y_test))]) / len(y_test)
 print(f"Accuracy on the test set: {accuracy * 100:.2f}%")
