@@ -16,7 +16,7 @@ LINGUISTIC_VALUES = {
     3: lambda x: sigmoid(x, 0, 1),
 }
 POPULATION_SIZE = 10
-NUM_GENERATIONS = 50
+NUM_GENERATIONS = 10
 CROSSOVER_PROBABILITY = 0.7
 MUTATION_PROBABILITY = 0.2
 
@@ -44,3 +44,7 @@ def main():
 
     accuracy = fuzzy_rule_system.evaluate(x_test, y_test, best_rule_base)
     print(f"Accuracy on the test set: {accuracy * 100:.2f}%")
+
+
+if __name__ == "__main__":
+    main()

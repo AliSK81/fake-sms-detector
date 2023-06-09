@@ -1,10 +1,7 @@
 import random
 
 from deap import base, creator, tools, algorithms
-from sklearn.model_selection import train_test_split
-
-from src.data_loader import SMSDataLoader
-from src.feature_extractor import FeatureExtractor
+from src.fuzzy_rule_base import FuzzyRuleBase
 from src.fuzzy_sets import *
 
 
@@ -36,7 +33,7 @@ class EvolutionaryAlgorithm:
 
     def fitness_function(self, individuals):
         rule_base = [individuals[i:i + self.rule_size] for i in range(0, len(individuals), self.rule_size)]
-        fuzzy_rule_system = FuzzyRuleBase(rule_base, LINGUISTIC_VALUES)
+        fuzzy_rule_system = FuzzyRuleBase(rule_base, self.linguistic_values)
         cf_values = [fuzzy_rule_system.calc_eternity_factor(self.x_train, self.y_train, rule) for rule in rule_base]
         accuracy = fuzzy_rule_system.evaluate(self.x_train, self.y_train, rule_base)
         print(f"Accuracy on the train set: {accuracy * 100:.2f}%")
