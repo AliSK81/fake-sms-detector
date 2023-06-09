@@ -16,12 +16,12 @@ class EvolutionaryAlgorithm:
 
     def create_toolbox(self):
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMax)
+        creator.create("Chromosome", list, fitness=creator.FitnessMax)
         toolbox = base.Toolbox()
         toolbox.register("attr_linguistic", random.randint, 0, 3)
         toolbox.register("attr_negation", random.randint, 0, 1)
         toolbox.register("attr_class", random.randint, 0, 1)
-        toolbox.register("individual", tools.initCycle, creator.Individual,
+        toolbox.register("individual", tools.initCycle, creator.Chromosome,
                          (toolbox.attr_linguistic, toolbox.attr_negation) * ((self.rule_size - 1) // 2) + (
                              toolbox.attr_class,), n=self.num_rules)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
