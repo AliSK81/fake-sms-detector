@@ -41,7 +41,7 @@ def calculate_gR(sample, rule, linguistic_values):
             value = linguistic_values[lv](sample[i // 2])
             if neg:
                 value = negation(value)
-            compat *= (value + 0.01)
+            compat *= value
     return compat
 
 
