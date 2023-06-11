@@ -1,6 +1,7 @@
 import random
 
 from deap import base, creator, tools, algorithms
+
 from src.fuzzy_rule_base import FuzzyRuleBase
 from src.fuzzy_sets import *
 
@@ -14,19 +15,33 @@ class EvolutionaryAlgorithm:
         self.linguistic_values = linguistic_values
         self.toolbox = self.create_toolbox()
 
+    def custom_mutate(self, individual):
+        for i in range(len(individual) - 1):
+            if i % 2 == 0:  # linguistic attribute
+                individual[i] = random.randint(0, 2)
+            elif i % 2 == 1:  # negation attribute
+                individual[i] = random.randint(-1, 1)
+            elif i % 2 == 2:  # fuzzyset attribute
+                individual[i] = random.randint(0, 3)
+        # class attribute
+        individual[-1] = random.randint(0, 1)
+        return individual,
+
     def create_toolbox(self):
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         creator.create("Chromosome", list, fitness=creator.FitnessMax)
         toolbox = base.Toolbox()
         toolbox.register("attr_linguistic", random.randint, 0, 3)
         toolbox.register("attr_negation", random.randint, -1, 1)
+        toolbox.register("attr_fuzzyset", random.randint, 0, 3)
         toolbox.register("attr_class", random.randint, 0, 1)
         toolbox.register("individual", tools.initCycle, creator.Chromosome,
-                         (toolbox.attr_linguistic, toolbox.attr_negation) * ((self.rule_size - 1) // 2) + (
+                         (toolbox.attr_linguistic, toolbox.attr_negation, toolbox.attr_fuzzyset) * (
+                                 (self.rule_size - 1) // 3) + (
                              toolbox.attr_class,), n=self.num_rules)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
         toolbox.register("mate", tools.cxOnePoint)
-        toolbox.register("mutate", tools.mutUniformInt, low=0, up=1, indpb=0.1)
+        toolbox.register("mutate", self.custom_mutate)
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("evaluate", self.fitness_function)
         return toolbox

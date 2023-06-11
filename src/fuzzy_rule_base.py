@@ -10,11 +10,12 @@ class FuzzyRuleBase:
 
     def calc_rule_compatibility(self, sample, rule):
         compat = 1
-        for i in range(0, len(rule) - 1, 2):
+        for i in range(0, len(rule) - 1, 3):
             lv = rule[i]
             neg = rule[i + 1]
-            if neg != -1 and lv in self.linguistic_values:
-                value = self.linguistic_values[lv](sample[i // 2])
+            fs = rule[i + 2]
+            if neg != -1 and fs in self.linguistic_values:
+                value = self.linguistic_values[fs](sample[i // 3])
                 if neg:
                     value = negation(value)
                 compat *= value

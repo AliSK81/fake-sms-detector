@@ -7,7 +7,8 @@ from src.feature_extractor import FeatureExtractor
 from src.fuzzy_rule_base import FuzzyRuleBase
 from src.fuzzy_sets import iso_tri, rect_trap, gaussian, sigmoid
 
-RULE_SIZE = 11
+NUM_FEATURES = 5
+RULE_SIZE = NUM_FEATURES * 3 + 1
 NUM_RULES = 50
 LINGUISTIC_VALUES = {
     0: lambda x: iso_tri(x, 0, 1),
@@ -16,7 +17,7 @@ LINGUISTIC_VALUES = {
     3: lambda x: sigmoid(x, 0, 1),
 }
 POPULATION_SIZE = 10
-NUM_GENERATIONS = 10
+NUM_GENERATIONS = 2
 CROSSOVER_PROBABILITY = 0.7
 MUTATION_PROBABILITY = 0.2
 
@@ -25,7 +26,7 @@ def main():
     data_loader = SMSDataLoader()
     records, labels = data_loader.load_data('SMSSpamCollection')
     feature_extractor = FeatureExtractor()
-    features = feature_extractor.extract_features(records, n_components=(RULE_SIZE - 1) // 2)
+    features = feature_extractor.extract_features(records, n_components=NUM_FEATURES)
     labels = np.array(labels, dtype=int)
 
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
