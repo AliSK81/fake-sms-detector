@@ -13,7 +13,7 @@ class FuzzyRuleBase:
         for i in range(0, len(rule) - 1, 2):
             lv = rule[i]
             neg = rule[i + 1]
-            if lv in self.linguistic_values:
+            if neg != -1 and lv in self.linguistic_values:
                 value = self.linguistic_values[lv](sample[i // 2])
                 if neg:
                     value = negation(value)
