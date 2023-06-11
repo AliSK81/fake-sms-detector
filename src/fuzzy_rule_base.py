@@ -32,7 +32,10 @@ class FuzzyRuleBase:
     def calc_eternity_factor(self, x, y, rule):
         num_classes = len(np.unique(y))
         fc_values = [self.calc_fc(x, y, rule, c) for c in range(num_classes)]
-        fyj = fc_values[rule[-1]]
+        if len(rule) == 0 or rule[-1] not in [0, 1]:
+            print('rule is ', rule)
+        rule_class = rule[-1]
+        fyj = fc_values[rule_class]
         fneg = (1 / (num_classes - 1)) * sum([fc_values[i] for i in range(num_classes) if i != rule[-1]])
         return (fyj - fneg) / (sum(fc_values) + 0.01)
 
