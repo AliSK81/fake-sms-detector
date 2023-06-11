@@ -25,7 +25,7 @@ def main():
     data_loader = SMSDataLoader()
     records, labels = data_loader.load_data('SMSSpamCollection')
     feature_extractor = FeatureExtractor()
-    features = feature_extractor.extract_features(records, n_components=(NUM_RULES - 1) // 2)
+    features = feature_extractor.extract_features(records, n_components=(RULE_SIZE - 1) // 2)
     labels = np.array(labels, dtype=int)
 
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
