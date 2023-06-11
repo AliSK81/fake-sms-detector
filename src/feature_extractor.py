@@ -21,7 +21,6 @@ class FeatureExtractor:
 
     def select_features(self, records, labels, n_components=5):
         df_records, _ = self._tfidf_vectorizer(records)
-        # feature_selection_model = SelectKBest(mutual_info_classif, k=n_components)
-        # selected_record_features = feature_selection_model.fit_transform(df_records, labels)
-        # return selected_record_features, feature_selection_model.get_feature_names_out()
-        return self.reduction_pca.fit_transform(df_records)
+        feature_selection_model = SelectKBest(mutual_info_classif, k=n_components)
+        selected_record_features = feature_selection_model.fit_transform(df_records, labels)
+        return selected_record_features  # , feature_selection_model.get_feature_names_out()
