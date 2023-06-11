@@ -1,6 +1,8 @@
 import random
 
 from deap import base, creator, tools, algorithms
+from matplotlib import pyplot as plt
+
 from src.fuzzy_rule_base import FuzzyRuleBase
 from src.fuzzy_sets import *
 
@@ -39,6 +41,16 @@ class EvolutionaryAlgorithm:
         print(f"Accuracy on the train set: {accuracy * 100:.2f}%")
         return sum(cf_values) / len(rule_base),
 
+    def show_fitness_history(self, min_fitness, max_fitness, avg_fitness, mutpb, cxpb):
+        gen = range(len(max_fitness))
+        plt.fill_between(gen, min_fitness, max_fitness, alpha=0.3)
+        plt.plot(gen, avg_fitness, label='Avg Fitness')
+        plt.title(f"Fitness over generations (mutpb={mutpb}, cxpb={cxpb})")
+        plt.xlabel("Generation")
+        plt.ylabel("Fitness")
+        plt.legend()
+        plt.show()
+
     def run(self, population_size, num_generations, crossover_probability, mutation_probability):
         population = self.toolbox.population(n=population_size)
         hof = tools.HallOfFame(1)
@@ -48,10 +60,16 @@ class EvolutionaryAlgorithm:
         stats.register("min", np.min)
         stats.register("max", np.max)
 
-        algorithms.eaSimple(population, self.toolbox, cxpb=crossover_probability,
-                            mutpb=mutation_probability, ngen=num_generations,
-                            stats=stats, halloffame=hof, verbose=True)
+        population, logbook = algorithms.eaSimple(population, self.toolbox, cxpb=crossover_probability,
+                                                  mutpb=mutation_probability, ngen=num_generations,
+                                                  stats=stats, halloffame=hof, verbose=True)
 
         best_individual = hof[0]
+
+        avg_fitness = logbook.select("avg")
+        min_fitness = logbook.select("min")
+        max_fitness = logbook.select("max")
+
+        self.show_fitness_history(min_fitness, max_fitness, avg_fitness, mutpb=mutation_probability, cxpb=crossover_probability)
         best_rule_base = [best_individual[i:i + self.rule_size] for i in range(0, len(best_individual), self.rule_size)]
         return best_rule_base
